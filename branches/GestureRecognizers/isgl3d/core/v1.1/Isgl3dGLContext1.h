@@ -35,15 +35,27 @@
 
 @private
 	EAGLContext * _context;
+
+	BOOL _msaaAvailable;
+	BOOL _msaaEnabled;
+	GLint _msaaSamples;
+	BOOL _framebufferDiscardAvailable;
 	
 	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
-	GLuint _defaultFramebuffer;
-	GLuint _colorRenderbuffer;
+	GLuint _defaultFrameBuffer;
+	GLuint _colorRenderBuffer;
 
 	GLuint _depthAndStencilRenderBuffer;
 	GLuint _depthRenderBuffer;
 	GLuint _stencilRenderBuffer;
 	
+	// OpenGL MSAA buffers
+	GLuint _msaaFrameBuffer;
+	GLuint _msaaColorRenderBuffer;
+	
+	GLuint _msaaDepthAndStencilRenderBuffer;
+	GLuint _msaaDepthRenderBuffer;
+	GLuint _msaaStencilRenderBuffer;
 }
 
 - (id) initWithLayer:(CAEAGLLayer *) layer;

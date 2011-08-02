@@ -218,6 +218,11 @@
 }
 - (void) reset {
 	
+	// save client states
+	[_previousState copyFrom:_currentState];
+	_currentState.cullingEnabled = NO;
+	_currentState.alphaBlendEnabled = NO;
+
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);

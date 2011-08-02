@@ -58,7 +58,10 @@
 
 - (BOOL) resizeFromLayer:(CAEAGLLayer *)layer;
 
+- (void) prepareRender;
 - (void) finalizeRender;
+- (void) switchToStandardBuffers;
+- (void) switchToMsaaBuffers;
 
 - (NSString *) getPixelString:(unsigned int)x y:(unsigned int)y;
 

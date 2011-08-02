@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  *
  */
- 
+
 @class Isgl3dGLRenderer;
 
 
@@ -57,6 +57,11 @@
  */
 - (Isgl3dGLRenderer *)createRenderer;
 
+/*
+ *
+ */
+- (void) prepareRender;
+
 /**
  * Used to finalize the rendering in OpenGL. 
  * This should never be called manually.
@@ -70,6 +75,13 @@
  * @return The hexidecimal value for the pixel colour.
  */
 - (NSString *) getPixelString:(unsigned int)x y:(unsigned int)y;
+
+/**
+ *
+ */
+- (void)switchToStandardBuffers;
+- (void)switchToMsaaBuffers;
+
 
 @end
 

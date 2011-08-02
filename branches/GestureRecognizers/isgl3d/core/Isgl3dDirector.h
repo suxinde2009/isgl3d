@@ -34,6 +34,9 @@
 @class Isgl3dEvent3DHandler;
 @class Isgl3dFpsRenderer;
 @class Isgl3dCamera;
+@class Isgl3dGestureManager;
+@class Isgl3dNode;
+
 
 @protocol Isgl3dRenderPhaseCallback
 - (void) preRender;
@@ -101,6 +104,8 @@
 	float _contentScaleFactor;
 	
 	id<Isgl3dRenderPhaseCallback> _renderPhaseCallback;
+	
+	Isgl3dGestureManager *_gestureManager;
 }
 
 /**
@@ -340,10 +345,57 @@
 - (NSString *) getPixelString:(unsigned int)x y:(unsigned int)y;
 
 /**
+ * Returns the node for the touch. 
+ * @return The node for the touch.
+ */
+- (Isgl3dNode *)nodeForTouch:(UITouch *)touch;
+
+/**
  * Enables or disables the retina display if the device allows it.
  * @param enabled True if the retina display should be enabled.
  */
 - (void) enableRetinaDisplay:(BOOL)enabled;
+
+/**
+ * Add a gesture recognizer for the node. The same gesture recognizer may be added for different nodes.
+ * @param gestureRecognizer The gesture recognizer to be added. Must not be nil.
+ * @param node The node for which the gesture recognizer will handle touches. If node is nil then the gesture recognizer only handles gestures if no node is being touched.
+ */
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer forNode:(Isgl3dNode *)node;
+
+/**
+ * Removes a gesture recognizer handling touches for the given node.
+ * @param gestureRecognizer The gesture recognizer to be removed. Must not be nil.
+ * @param node The node for which the gesture recognizer will handle touches.
+ */
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer fromNode:(Isgl3dNode *)node;
+
+/**
+ * Removes a gesture recognizer from all nodes.
+ * @param gestureRecogniter The gesture recognizer to be removed.
+ */
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
+
+/**
+ * Returns an array of all gesture recognizers attached to the specified node.
+ * @result Array of gesture recognizers attached to the node.
+ */
+- (NSArray *)gestureRecognizersForNode:(Isgl3dNode *)node;
+
+/**
+ * Returns the original gesture recognizer delegate for the specified gesture recognizer.
+ * To be used after a gesture recognizer has been added to a node.
+ * @result The gesture recognizer delegate if the node contains the specified gesture recognizer.
+ */
+- (id<UIGestureRecognizerDelegate>)gestureRecognizerDelegateFor:(UIGestureRecognizer *)gestureRecognizer;
+
+/**
+ * Sets the gesture recognizer delegate for a gesture recognizer of the node.
+ * To be used after a gesture recognizer has been added to a node.
+ * param aDelegate The gesture recognizer delegate to set.
+ * param gestureRecognizer The gesture recognizer of the node for which the delegate should be set.
+ */
+- (void)setGestureRecognizerDelegate:(id<UIGestureRecognizerDelegate>)aDelegate forGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
 
 @end
 

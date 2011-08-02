@@ -30,11 +30,19 @@
 #import "Isgl3dGLTexture.h"
 #import "Isgl3dGLTextureFactory.h"
 
+
 @interface Isgl3dTextureMaterial (PrivateMethods)
 - (id) initWithCubemapTextureFiles:(NSArray *)pathArray shininess:(float)shininess precision:(Isgl3dTexturePrecision)precision repeatX:(BOOL)repeatX repeatY:(BOOL)repeatY;
 @end
 
+@interface Isgl3dTextureMaterial ()
+@property (nonatomic, retain) Isgl3dGLTexture *texture;
+@end
+
+
 @implementation Isgl3dTextureMaterial
+
+@synthesize texture=_texture;
 
 + (id) materialWithTextureFile:(NSString *)fileName shininess:(float)shininess precision:(Isgl3dTexturePrecision)precision repeatX:(BOOL)repeatX repeatY:(BOOL)repeatY {
 	return [[[self alloc] initWithTextureFile:fileName shininess:shininess precision:precision repeatX:repeatX repeatY:repeatY] autorelease];
@@ -97,8 +105,18 @@
 
 - (void) dealloc {
 	[_texture release];
+	_texture = nil;
 
 	[super dealloc];
+}
+
+- (id) copyWithZone:(NSZone *)zone {
+	Isgl3dTextureMaterial * copy = [super copyWithZone:zone];
+	
+	copy.texture = _texture;
+	copy.isHighDefinition = _isHighDefinition;
+	
+	return copy;
 }
 
 - (void) prepareRenderer:(Isgl3dGLRenderer *)renderer alpha:(float)alpha {

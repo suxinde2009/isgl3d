@@ -36,6 +36,8 @@
 #import "Isgl3dTweener.h"
 #import "Isgl3dFpsRenderer.h"
 #import "Isgl3dMatrix.h"
+#import "Isgl3dGestureManager.h"
+#import "Isgl3dNode.h"
 
 #import <QuartzCore/QuartzCore.h>
 #import <sys/time.h>
@@ -45,6 +47,7 @@ extern NSString * isgl3dVersion();
 static Isgl3dDirector * _instance = nil;
 
 @interface Isgl3dDirector ()
+@property (nonatomic, retain) Isgl3dGestureManager *gestureManager;
 - (id) initSingleton;
 - (void) setContentScaleFactor:(float)contentScaleFactor;
 - (void) mainLoop;
@@ -66,6 +69,7 @@ static Isgl3dDirector * _instance = nil;
 @synthesize deltaTime = _dt;
 @synthesize activeCamera = _activeCamera;
 @synthesize renderPhaseCallback = _renderPhaseCallback;
+@synthesize gestureManager = _gestureManager;
 
 - (id) init {
 	NSLog(@"Isgl3dDirector::init should not be called on singleton. Instance should be accessed via sharedInstance");
@@ -123,8 +127,8 @@ static Isgl3dDirector * _instance = nil;
 		_retinaDisplayEnabled = NO;
 		_contentScaleFactor = 1.0f;
 		
-		_renderPhaseCallback = 0;
-
+		_renderPhaseCallback = nil;
+		
 #ifdef ISGL3D_MATRIX_MATH_ACCEL
 		Isgl3dLog(Info, @"Isgl3dDirector : hardware accelerated matrix operations using %@ library", ISGL3D_MATRIX_MATH_ACCEL);
 #endif
@@ -136,6 +140,9 @@ static Isgl3dDirector * _instance = nil;
 - (void) dealloc {
 	Isgl3dLog(Info, @"Isgl3dDirector : dealloc");
 
+	[_gestureManager release];
+	_gestureManager = nil;
+	
 	if (_glView) {
 		[_glView release];
 	}
@@ -265,8 +272,12 @@ static Isgl3dDirector * _instance = nil;
 
 - (void) setOpenGLView:(UIView<Isgl3dGLView> *)glView {
 	if (glView != _glView) {
+
+		[_gestureManager release];
+		_gestureManager = nil;
+		
 		if (_glView) {
-			
+
 			// Release the ui view
 			[_glView release];
 			_glView = nil;
@@ -293,6 +304,10 @@ static Isgl3dDirector * _instance = nil;
 			
 			// Create fps renderer
 			_fpsRenderer = [[Isgl3dFpsRenderer alloc] initWithOrientation:_deviceOrientation];
+
+			_gestureManager = [[Isgl3dGestureManager alloc] initWithIsgl3dDirector:self];
+			
+			[self onResizeFromLayer];
 		}
 		
 	}
@@ -462,6 +477,10 @@ static Isgl3dDirector * _instance = nil;
 	return [_glView getPixelString:x y:y];
 }
 
+- (Isgl3dNode *)nodeForTouch:(UITouch *)touch {
+	return [_gestureManager nodeForTouch:touch];
+}
+
 - (void) enableRetinaDisplay:(BOOL)enabled {
 	if (enabled && !_glView) {
 		Isgl3dLog(Error, @"Isgl3dDirector : cannot enable retina display before Isgl3dEAGLView has been set.");
@@ -547,6 +566,9 @@ static Isgl3dDirector * _instance = nil;
 		[[Isgl3dScheduler sharedInstance] tick:_dt];	
 	}
 	
+	// Prepare the rendering
+	[_glView prepareRender];
+	
 	// Callback before rendering
 	if (_renderPhaseCallback) {
 		[_renderPhaseCallback preRender];
@@ -618,11 +640,11 @@ static Isgl3dDirector * _instance = nil;
 
 	// Initialise capture of objects
 	[[Isgl3dObject3DGrabber sharedInstance] startCapture];
-
+	
 	static float black[4] = {0, 0, 0, 1};
 	// Clear the color buffer of full screen (depth/stencil handled by individual views)
-	[_renderer clear:ISGL3D_COLOR_BUFFER_BIT color:black viewport:_windowRectInPixels];
-
+	[_renderer clear:ISGL3D_COLOR_BUFFER_BIT color:black viewport:_windowRectInPixels];	
+	
 	// Render shadow maps in all view
 	for (Isgl3dView * view in _views) {
 		[view renderForEventCapture:_renderer];
@@ -636,15 +658,12 @@ static Isgl3dDirector * _instance = nil;
 #pragma mark Isgl3dTouchDelegate implementation
 
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-	// Render for 3d events
-	[self renderForEventCapture];
-
 	// Handle Object3D events
 	_objectTouched = [_event3DHandler touchesBegan:touches withEvent:event];
-
+	
 	// Dispatch event to touch screen
 	[[Isgl3dTouchScreen sharedInstance] touchesBegan:touches withEvent:event];
-
+	
 	_objectTouched = NO;
 }
 
@@ -671,5 +690,29 @@ static Isgl3dDirector * _instance = nil;
 	[[Isgl3dTouchScreen sharedInstance] touchesCancelled:touches withEvent:event];
 }
 
+
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer forNode:(Isgl3dNode *)node {
+	[_gestureManager addGestureRecognizer:gestureRecognizer forNode:node];
+}
+
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer fromNode:(Isgl3dNode *)node {
+	[_gestureManager removeGestureRecognizer:gestureRecognizer fromNode:node];
+}
+
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+	[_gestureManager removeGestureRecognizer:gestureRecognizer];
+}
+
+- (NSArray *)gestureRecognizersForNode:(Isgl3dNode *)node {
+	return [_gestureManager gestureRecognizersForNode:node];
+}
+
+- (id<UIGestureRecognizerDelegate>)gestureRecognizerDelegateFor:(UIGestureRecognizer *)gestureRecognizer {
+	return [_gestureManager delegateForGestureRecognizer:gestureRecognizer];
+}
+
+- (void)setGestureRecognizerDelegate:(id<UIGestureRecognizerDelegate>)aDelegate forGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+	[_gestureManager setGestureRecognizerDelegate:aDelegate forGestureRecognizer:gestureRecognizer];
+}
 
 @end

@@ -31,7 +31,7 @@
  * The Isgl3dMaterial is the abstract class used for all materials in iSGL3D. It can not be rendered: an extended
  * class must be used to provide a real material for rendering.
  */
-@interface Isgl3dMaterial : NSObject {
+@interface Isgl3dMaterial : NSObject <NSCopying> {
 
 @private
 

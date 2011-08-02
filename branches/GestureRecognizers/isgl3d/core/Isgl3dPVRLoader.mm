@@ -23,53 +23,37 @@
  *
  */
 
-#import "Isgl3dGLContext.h"
+#import "Isgl3dPVRLoader.h"
+#import "Isgl3dLog.h"
+#ifdef GL_ES_VERSION_2_0
+#import <OpenGLES/ES2/gl.h>
+#else
+#import <OpenGLES/ES1/gl.h>
+#endif
+#import "PVRTTextureAPI.h"
+#import "PVRTTexture.h"
 
-@implementation Isgl3dGLContext
 
 
-@synthesize backingWidth = _backingWidth;
-@synthesize backingHeight = _backingHeight;
-@synthesize stencilBufferAvailable = _stencilBufferAvailable;
+@implementation Isgl3dPVRLoader
 
-- (id) init {
++ (unsigned int) createTextureFromPVR:(NSString *)file outWidth:(unsigned int *)width outHeight:(unsigned int *)height {
 	
-	if ((self = [super init])) {
-		
+	unsigned int textureIndex = 0;
+	PVR_Texture_Header oldHeader;
+	const char *cFileName = [file cStringUsingEncoding:NSUTF8StringEncoding];
+	
+	if (PVRTTextureLoadFromPVR(cFileName, (GLuint *)&textureIndex, &oldHeader) == PVR_SUCCESS)
+	{
+		*width = CFSwapInt32LittleToHost(oldHeader.dwWidth);
+		*height = CFSwapInt32LittleToHost(oldHeader.dwHeight);
+	}			  
+	else
+	{
+		Isgl3dLog(Error, @"Error creating texture from file (%@)", file);
 	}
-	
-	return self;
+	return textureIndex;
 }
 
-- (void)dealloc {
-	
-	[super dealloc];
-}
-
-- (Isgl3dGLRenderer *) createRenderer {
-	return nil;
-}
-
-- (BOOL) resizeFromLayer:(CAEAGLLayer *)layer {
-	return true;
-}
-
-- (void) prepareRender {
-}
-
-- (void) finalizeRender {
-}
-
-- (NSString *) getPixelString:(unsigned int)x y:(unsigned int)y {
-	return nil;
-}
-
-- (void)switchToStandardBuffers
-{
-}
-
-- (void)switchToMsaaBuffers
-{
-}
 
 @end

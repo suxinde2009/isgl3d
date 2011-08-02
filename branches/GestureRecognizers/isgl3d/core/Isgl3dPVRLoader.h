@@ -23,53 +23,13 @@
  *
  */
 
-#import "Isgl3dGLContext.h"
-
-@implementation Isgl3dGLContext
+#import <Foundation/Foundation.h>
 
 
-@synthesize backingWidth = _backingWidth;
-@synthesize backingHeight = _backingHeight;
-@synthesize stencilBufferAvailable = _stencilBufferAvailable;
-
-- (id) init {
-	
-	if ((self = [super init])) {
-		
-	}
-	
-	return self;
-}
-
-- (void)dealloc {
-	
-	[super dealloc];
-}
-
-- (Isgl3dGLRenderer *) createRenderer {
-	return nil;
-}
-
-- (BOOL) resizeFromLayer:(CAEAGLLayer *)layer {
-	return true;
-}
-
-- (void) prepareRender {
-}
-
-- (void) finalizeRender {
-}
-
-- (NSString *) getPixelString:(unsigned int)x y:(unsigned int)y {
-	return nil;
-}
-
-- (void)switchToStandardBuffers
+@interface Isgl3dPVRLoader : NSObject
 {
-}
 
-- (void)switchToMsaaBuffers
-{
 }
++ (unsigned int) createTextureFromPVR:(NSString *)file outWidth:(unsigned int *)width outHeight:(unsigned int *)height;
 
 @end
