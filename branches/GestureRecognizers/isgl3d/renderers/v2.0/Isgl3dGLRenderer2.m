@@ -224,7 +224,6 @@
 	_currentState.alphaBlendEnabled = NO;
 
 	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
 	
 }

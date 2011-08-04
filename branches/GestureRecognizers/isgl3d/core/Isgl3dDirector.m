@@ -70,6 +70,9 @@ static Isgl3dDirector * _instance = nil;
 @synthesize activeCamera = _activeCamera;
 @synthesize renderPhaseCallback = _renderPhaseCallback;
 @synthesize gestureManager = _gestureManager;
+@synthesize msaaAvailable;
+@synthesize msaaEnabled = _msaaEnabled;
+
 
 - (id) init {
 	NSLog(@"Isgl3dDirector::init should not be called on singleton. Instance should be accessed via sharedInstance");
@@ -126,6 +129,8 @@ static Isgl3dDirector * _instance = nil;
 		
 		_retinaDisplayEnabled = NO;
 		_contentScaleFactor = 1.0f;
+        
+        _msaaEnabled = NO;
 		
 		_renderPhaseCallback = nil;
 		
@@ -276,6 +281,8 @@ static Isgl3dDirector * _instance = nil;
 		[_gestureManager release];
 		_gestureManager = nil;
 		
+        _msaaEnabled = NO;
+        
 		if (_glView) {
 
 			// Release the ui view
@@ -291,7 +298,9 @@ static Isgl3dDirector * _instance = nil;
 		
 		if (glView) {
 			_glView = [glView retain];
-
+            
+            glView.msaaEnabled = _msaaEnabled;
+            
 			// Get the window dimensions
 			_windowRect = [_glView bounds];
 			[self setContentScaleFactor:_contentScaleFactor];
@@ -713,6 +722,19 @@ static Isgl3dDirector * _instance = nil;
 
 - (void)setGestureRecognizerDelegate:(id<UIGestureRecognizerDelegate>)aDelegate forGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
 	[_gestureManager setGestureRecognizerDelegate:aDelegate forGestureRecognizer:gestureRecognizer];
+}
+
+- (BOOL)msaaAvailable {
+    return (_glView && _glView.msaaAvailable);
+}
+
+- (void)setMsaaEnabled:(BOOL)value {
+    if (value != _msaaEnabled) {
+        if (_glView) {
+            _msaaEnabled = value;
+            _glView.msaaEnabled = _msaaEnabled;
+        }
+    }
 }
 
 @end

@@ -41,11 +41,6 @@
 @private
 	EAGLContext * _context;
 
-	BOOL _msaaAvailable;
-	BOOL _msaaEnabled;
-	GLint _msaaSamples;
-	BOOL _framebufferDiscardAvailable;
-	
 	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
 	GLuint _defaultFrameBuffer;
 	GLuint _colorRenderBuffer;

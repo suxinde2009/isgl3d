@@ -102,6 +102,8 @@
 	
 	BOOL _retinaDisplayEnabled;
 	float _contentScaleFactor;
+    
+    BOOL _msaaEnabled;
 	
 	id<Isgl3dRenderPhaseCallback> _renderPhaseCallback;
 	
@@ -240,6 +242,16 @@
  * The render phase callback allows for user operations to occur during the main laop.
  */
 @property (nonatomic, assign) id<Isgl3dRenderPhaseCallback> renderPhaseCallback;
+
+/**
+ * Returns true if MSAA is supported.
+ */
+@property (nonatomic, readonly) BOOL msaaAvailable;
+
+/**
+ * Indicates wether MSAA should be enabled. MSAA won't be enabled if it's not available.
+ */
+@property (nonatomic, assign) BOOL msaaEnabled;
 
 
 /**

@@ -51,6 +51,16 @@
 @property (nonatomic, assign) id<Isgl3dTouchDelegate> isgl3dTouchDelegate;
 
 /**
+ * Returns true if MSAA is supported.
+ */
+@property (nonatomic, readonly) BOOL msaaAvailable;
+
+/**
+ * Indicates wether MSAA should be enabled. MSAA won't be enabled if it's not available.
+ */
+@property (nonatomic, assign) BOOL msaaEnabled;
+
+/**
  * Allocates, initialises and returns an autoreleased Isgl3dGLRenderer for either OpenGL 1.1 or 2.0.
  * This is used by the Isgl3dDirector to obtain an OpenGL renderer.
  * @returns the Isgl3dGLRenderer.

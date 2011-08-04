@@ -45,14 +45,13 @@
 
 @implementation Isgl3dGLContext2
 
-
 // Create an ES 2.0 context
 - (id) initWithLayer:(CAEAGLLayer *) layer {
 	
 	if ((self = [super init])) {
 		
 		_msaaAvailable = NO;
-		_msaaEnabled = YES;
+		_msaaEnabled = NO;
 		_framebufferDiscardAvailable = NO;
 		
 		_currentRenderImage = NULL;
@@ -506,6 +505,20 @@
 	return _currentRenderImage;
 }
 
+- (void) setMsaaEnabled:(BOOL)value {
+    if (!_msaaAvailable)
+        return;
+    
+    if (_msaaEnabled != value) {
+        _msaaEnabled = value;
+        
+        if (_msaaEnabled) {
+            [self createExtensionBuffers];
+        } else {
+            [self releaseExtensionBuffers];
+        }
+    }
+}
 
 - (void)switchToStandardBuffers
 {

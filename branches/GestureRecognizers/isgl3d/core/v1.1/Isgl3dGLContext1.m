@@ -48,7 +48,7 @@
 	if ((self = [super init])) {
 
 		_msaaAvailable = NO;
-		_msaaEnabled = YES;
+		_msaaEnabled = NO;
 		_framebufferDiscardAvailable = NO;
 		
 		// Create the OpenGL context using ES 1.1
@@ -405,18 +405,28 @@
 	return pixelString;
 }
 
-- (CGImageRef)currentRenderImage
-{
-	return NULL;
+- (void) setMsaaEnabled:(BOOL)value {
+    if (!_msaaAvailable)
+        return;
+    
+    if (_msaaEnabled != value) {
+        _msaaEnabled = value;
+        
+        if (_msaaEnabled) {
+            [self createExtensionBuffers];
+        } else {
+            [self releaseExtensionBuffers];
+        }
+    }
 }
 
-- (void)switchToStandardBuffers
+- (void) switchToStandardBuffers
 {
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, _defaultFrameBuffer);
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, _colorRenderBuffer);
 }
 
-- (void)switchToMsaaBuffers
+- (void) switchToMsaaBuffers
 {
 	if (_msaaAvailable && _msaaEnabled) {
 		glBindFramebufferOES(GL_FRAMEBUFFER_OES, _msaaFrameBuffer);

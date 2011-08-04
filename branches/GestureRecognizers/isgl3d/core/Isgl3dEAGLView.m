@@ -278,4 +278,16 @@
 	[_glContext switchToMsaaBuffers];
 }
 
+- (BOOL)msaaAvailable {
+    return _glContext.msaaAvailable;
+}
+
+- (BOOL)msaaEnabled {
+    return _glContext.msaaEnabled;
+}
+
+- (void)setMsaaEnabled:(BOOL)value {
+    _glContext.msaaEnabled = value;
+}
+
 @end

@@ -43,6 +43,11 @@
 	float _clearColor[4];
 	
 	BOOL _stencilBufferAvailable;
+
+	BOOL _msaaAvailable;
+	BOOL _msaaEnabled;
+	int _msaaSamples;
+	BOOL _framebufferDiscardAvailable;
 	
 	Isgl3dGLRenderer * _currentRenderer;
 }
@@ -50,6 +55,8 @@
 @property (readonly) int backingWidth;
 @property (readonly) int backingHeight;
 @property (readonly) BOOL stencilBufferAvailable;
+@property (nonatomic, readonly) BOOL msaaAvailable;
+@property (nonatomic, assign) BOOL msaaEnabled;
 
 /**
  * @result (autorelease) GLRenderer depending on Context version
