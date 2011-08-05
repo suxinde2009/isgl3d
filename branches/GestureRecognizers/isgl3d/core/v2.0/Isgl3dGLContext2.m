@@ -391,7 +391,7 @@
 		glBindRenderbuffer(GL_RENDERBUFFER, _msaaColorRenderBuffer);
 	} else {
 		glBindFramebuffer(GL_FRAMEBUFFER, _defaultFrameBuffer);
-		glBindFramebuffer(GL_RENDERBUFFER, _colorRenderBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderBuffer);
 	}
 }
 
