@@ -67,12 +67,10 @@
 	return nil;
 }
 
-- (void)switchToStandardBuffers
-{
+- (void)switchToStandardBuffers {
 }
 
-- (void)switchToMsaaBuffers
-{
+- (void)switchToMsaaBuffers {
 }
 
 @end

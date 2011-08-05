@@ -281,8 +281,6 @@ static Isgl3dDirector * _instance = nil;
 		[_gestureManager release];
 		_gestureManager = nil;
 		
-        _msaaEnabled = NO;
-        
 		if (_glView) {
 
 			// Release the ui view
@@ -317,7 +315,9 @@ static Isgl3dDirector * _instance = nil;
 			_gestureManager = [[Isgl3dGestureManager alloc] initWithIsgl3dDirector:self];
 			
 			[self onResizeFromLayer];
-		}
+		} else {
+            _msaaEnabled = NO;
+        }
 		
 	}
 }
@@ -730,8 +730,9 @@ static Isgl3dDirector * _instance = nil;
 
 - (void)setMsaaEnabled:(BOOL)value {
     if (value != _msaaEnabled) {
+        _msaaEnabled = value;
+
         if (_glView) {
-            _msaaEnabled = value;
             _glView.msaaEnabled = _msaaEnabled;
         }
     }
