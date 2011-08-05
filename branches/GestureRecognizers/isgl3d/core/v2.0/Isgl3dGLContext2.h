@@ -41,6 +41,10 @@
 @private
 	EAGLContext * _context;
 
+    // The active buffers
+    GLuint _activeFrameBuffer;
+    GLuint _activeRenderBuffer;
+    
 	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
 	GLuint _defaultFrameBuffer;
 	GLuint _colorRenderBuffer;

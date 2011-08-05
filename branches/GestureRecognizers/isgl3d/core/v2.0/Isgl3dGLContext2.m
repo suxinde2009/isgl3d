@@ -33,6 +33,9 @@
 
 
 @interface Isgl3dGLContext2 ()
+@property (nonatomic) GLuint activeFrameBuffer;
+@property (nonatomic) GLuint activeRenderBuffer;
+
 - (void) checkGLExtensions;
 - (BOOL) createBuffers:(CAEAGLLayer *)eaglLayer;
 - (BOOL) createExtensionBuffers;
@@ -44,6 +47,10 @@
 
 
 @implementation Isgl3dGLContext2
+
+@synthesize activeFrameBuffer=_activeFrameBuffer;
+@synthesize activeRenderBuffer=_activeRenderBuffer;
+
 
 // Create an ES 2.0 context
 - (id) initWithLayer:(CAEAGLLayer *) layer {
@@ -58,6 +65,9 @@
 		_currentRenderImageData = NULL;
 		_currentRenderImageDataRef = NULL;
 
+        _activeFrameBuffer = 0;
+        _activeRenderBuffer = 0;
+        
 		// Create the OpenGL context using ES 2.0
 		_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 		if (!_context || ![EAGLContext setCurrentContext:_context]) {
@@ -314,6 +324,9 @@
 	
 	[self releaseExtensionBuffers];
 
+    _activeFrameBuffer = 0;
+    _activeRenderBuffer = 0;
+    
 	if (oldContext != _context)
 		[EAGLContext setCurrentContext:oldContext];
 }
@@ -386,13 +399,12 @@
 - (void) prepareRender {
 	[super prepareRender];
 	
-	if(_msaaAvailable && _msaaEnabled){
-		glBindFramebuffer(GL_FRAMEBUFFER, _msaaFrameBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, _msaaColorRenderBuffer);
+	if(_msaaAvailable && _msaaEnabled) {
+        self.activeFrameBuffer = _msaaFrameBuffer;
 	} else {
-		glBindFramebuffer(GL_FRAMEBUFFER, _defaultFrameBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderBuffer);
+        self.activeFrameBuffer = _defaultFrameBuffer;
 	}
+    self.activeRenderBuffer = _colorRenderBuffer;
 }
 
 - (void) finalizeRender {
@@ -400,17 +412,23 @@
 	
 	if (_msaaAvailable && _msaaEnabled) {
 		//glDisable(GL_SCISSOR_TEST);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, _msaaFrameBuffer);
+        _activeFrameBuffer = 0;
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER_APPLE, _defaultFrameBuffer);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, _msaaFrameBuffer);
 		glResolveMultisampleFramebufferAPPLE();
 	}
 	
 	if (_framebufferDiscardAvailable) {
-		const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
-		glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 3, discards);
+        if (_stencilBufferAvailable) {
+            const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
+            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 3, discards);
+        } else {
+            const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT };
+            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
+        }
 	}
 	
-	glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderBuffer);
+    self.activeRenderBuffer = _colorRenderBuffer;
 	[_context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
@@ -522,16 +540,30 @@
 
 - (void)switchToStandardBuffers
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, _defaultFrameBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderBuffer);
+    self.activeFrameBuffer = _defaultFrameBuffer;
+    self.activeRenderBuffer = _colorRenderBuffer;
 }
 
 - (void)switchToMsaaBuffers
 {
 	if (_msaaAvailable && _msaaEnabled) {
-		glBindFramebuffer(GL_FRAMEBUFFER, _msaaFrameBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, _msaaColorRenderBuffer);
+        self.activeFrameBuffer = _msaaFrameBuffer;
+        self.activeRenderBuffer = _msaaColorRenderBuffer;
 	}
+}
+
+- (void)setActiveFrameBuffer:(GLuint)buffer {
+    if (_activeFrameBuffer != buffer) {
+        _activeFrameBuffer = buffer;
+        glBindFramebuffer(GL_FRAMEBUFFER, _activeFrameBuffer);
+    }
+}
+
+- (void)setActiveRenderBuffer:(GLuint)buffer {
+    if (_activeRenderBuffer != buffer) {
+        _activeRenderBuffer = buffer;
+        glBindRenderbuffer(GL_RENDERBUFFER, _activeRenderBuffer);
+    }
 }
 
 @end
