@@ -28,8 +28,8 @@ uniform mat3 u_normalMatrix;
 uniform vec4 u_sceneAmbientColor;
 
 uniform Material u_material;
-uniform Light u_light[MAX_LIGHTS];
-uniform bool u_lightEnabled[MAX_LIGHTS];
+uniform Light u_light[4];
+uniform bool u_lightEnabled[4];
 
 uniform bool u_includeSpecular;
 uniform bool u_lightingEnabled;
@@ -61,9 +61,6 @@ uniform highp mat3 u_boneMatrixArrayIT[8];
 #endif
 
 
-const float	c_zero = 0.0;
-const float	c_one = 1.0;
-
 vec3 ecPosition3;
 vec3 normal;
 vec3 eye;
@@ -71,11 +68,11 @@ vec4 vertexPosition;
 vec3 vertexNormal;
 
 
-void pointLight(in int lightIndex,
+void pointLight(const in int lightIndex,
 				inout vec4 ambient,
 				inout vec4 diffuse,
 				inout vec4 specular) {
-
+    
 	float nDotVP;
 	float eDotRV;
 	float pf;
@@ -83,10 +80,10 @@ void pointLight(in int lightIndex,
 	float d;
 	vec3 VP;
 	vec3 reflectVector;
-
-
+    
+    
 	// Check if light source is directional
-	if (u_light[lightIndex].position.w != c_zero) {
+	if (u_light[lightIndex].position.w != 0.0) {
 		// Vector between light position and vertex
 		VP = vec3(u_light[lightIndex].position.xyz - ecPosition3);
 		
@@ -97,46 +94,40 @@ void pointLight(in int lightIndex,
 		VP = normalize(VP);
 		
 		// Calculate attenuation
-		vec3 attDist = vec3(c_one, d, d * d);
-		attenuation = c_one / dot(u_light[lightIndex].attenuation, attDist);
-								
-		// Calculate spot lighting effects			
-		//
-		// THIS IS COMMENTED OUT TEMPORARILY:
-		// THE FOLLOWING TEST DOES NOT WORK CORRECTLY IN IPHONE SHADER EVEN IF UNIFORM VALUES
-		// ARE CORRECTLY SENT TO GPU
-		//			
-/*		if (u_light[lightIndex].spotCutoffAngle > c_zero) {
+		vec3 attDist = vec3(1.0, d, d * d);
+		attenuation = 1.0 / dot(u_light[lightIndex].attenuation, attDist);
+        
+		// Calculate spot lighting effects
+		if (u_light[lightIndex].spotCutoffAngle > 0.0) {
 			float spotFactor = dot(-VP, u_light[lightIndex].spotDirection);
 			if (spotFactor >= cos(radians(u_light[lightIndex].spotCutoffAngle))) {
 				spotFactor = pow(spotFactor, u_light[lightIndex].spotFalloffExponent);
-
+                
 			} else {
-				spotFactor = c_zero;
+				spotFactor = 0.0;
 			}
 			attenuation *= spotFactor;
 		}
-*/		
 	} else {
-		attenuation = c_one;
+		attenuation = 1.0;
 		VP = u_light[lightIndex].position.xyz;
 	}
-		
+    
 	// angle between normal and light-vertex vector
-	nDotVP = max(c_zero, dot(VP, normal));
+	nDotVP = max(0.0, dot(VP, normal));
 	
  	ambient += u_light[lightIndex].ambientColor * attenuation;
-	if (nDotVP > c_zero) {
+	if (nDotVP > 0.0) {
 		diffuse += u_light[lightIndex].diffuseColor * (nDotVP * attenuation);
-	
+        
 		if (u_includeSpecular) {
 			// reflected vector					
 			reflectVector = normalize(reflect(-VP, normal));
 			
 			// angle between eye and reflected vector
-			eDotRV = max(c_zero, dot(eye, reflectVector));
+			eDotRV = max(0.0, dot(eye, reflectVector));
 			eDotRV = pow(eDotRV, 16.0);
-		
+            
 			pf = pow(eDotRV, u_material.shininess);
 			specular += u_light[lightIndex].specularColor * (pf * attenuation);
 		}
@@ -145,26 +136,32 @@ void pointLight(in int lightIndex,
 }
 
 void doLighting() {
-	int i;
-	vec4 amb = vec4(c_zero);
-	vec4 diff = vec4(c_zero);
-	vec4 spec = vec4(c_zero);
-
+	vec4 amb = vec4(0.0);
+	vec4 diff = vec4(0.0);
+	vec4 spec = vec4(0.0);
+    
 	if (u_lightingEnabled) {
-
+        
 		ecPosition3 = vec3(u_mvMatrix * vertexPosition);
-	
+        
 		eye = -normalize(ecPosition3);
-	
+        
 		normal = u_normalMatrix * vertexNormal;
 		normal = normalize(normal);
-
-		for (i = int(c_zero); i < MAX_LIGHTS; i++) {
-			if (u_lightEnabled[i]) {
-				pointLight(i, amb, diff, spec);
-			} 	
-		}
-
+        
+        if (u_lightEnabled[0]) {
+            pointLight(0, amb, diff, spec);
+        }
+        if (u_lightEnabled[1]) {
+            pointLight(1, amb, diff, spec);
+        }
+        if (u_lightEnabled[2]) {
+            pointLight(2, amb, diff, spec);
+        }
+        if (u_lightEnabled[3]) {
+            pointLight(3, amb, diff, spec);
+        }
+        
 		v_color.rgb = (u_sceneAmbientColor.rgb + amb.rgb) * u_material.ambientColor.rgb + diff.rgb * u_material.diffuseColor.rgb;
 		v_color.a = u_material.diffuseColor.a;
 		
@@ -187,7 +184,7 @@ void doSkinning() {
 	if (u_boneCount > 0) {
 		highp mat4 boneMatrix = u_boneMatrixArray[boneIndex.x];
 		mediump mat3 normalMatrix = u_boneMatrixArrayIT[boneIndex.x];
-	
+        
 		vertexPosition = boneMatrix * a_vertex * boneWeights.x;
 		vertexNormal = normalMatrix * a_normal * boneWeights.x;
 		
@@ -195,10 +192,10 @@ void doSkinning() {
 			// "rotate" the vector components
 			boneIndex = boneIndex.yzwx;
 			boneWeights = boneWeights.yzwx;
-		
+            
 			boneMatrix = u_boneMatrixArray[boneIndex.x];
 			normalMatrix = u_boneMatrixArrayIT[boneIndex.x];
-
+            
 			vertexPosition += boneMatrix * a_vertex * boneWeights.x;
 			vertexNormal += normalMatrix * a_normal * boneWeights.x;
 		}	
@@ -218,7 +215,7 @@ void main(void) {
 #endif
 	
 	doLighting();
-
+    
 #ifdef TEXTURE_MAPPING_ENABLED
 	v_texCoord = a_texCoord;
 #endif
@@ -232,9 +229,9 @@ void main(void) {
 	
 	// angle between normal and light-vertex vector
 	float nDotVP = dot(VP, normal);
-
+    
 	v_shadowCoord = u_mcToLightMatrix * vertexPosition;
-	if (nDotVP < c_zero) {
+	if (nDotVP < 0.0) {
 		v_shadowCoord = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 #endif

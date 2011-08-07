@@ -227,15 +227,15 @@
 }
 
 - (void) addLight:(Isgl3dLight *)light viewMatrix:(Isgl3dMatrix4 *)viewMatrix {
+	if (_lightCount >= MAX_LIGHTS) {
+		Isgl3dLog(Warn, @"Number of lights exceeds %i", MAX_LIGHTS);
+		return;
+	}
+	
 	[self setActive];
 	unsigned int lightIndex = _lightCount;
 	
 	_lightCount++;
-	
-	if (_lightCount > MAX_LIGHTS) {
-		Isgl3dLog(Warn, @"Number of lights exceeds %i", MAX_LIGHTS);
-		return;
-	}
 	
 	// enable light
 	[self setUniform1i:_lightEnabledLocation[lightIndex] value:1];

@@ -221,12 +221,17 @@
 - (BOOL)createExtensionBuffers {
 	BOOL succeeded = NO;
 	
-	// MSAA
-	if (_msaaAvailable && _msaaEnabled) {
+	// MSAA support
+    if (!_msaaAvailable) {
+		Isgl3dLog(Info, @"Isgl3dGLContext2 : MSAA unavailable for device.");
+        return YES;
+    }
+    
+	if (_msaaEnabled) {
 		// Get the maximum number of MSAA samples
 		glGetIntegerv(GL_MAX_SAMPLES_APPLE, &_msaaSamples);
 		if (_msaaSamples <= 0) {
-			Isgl3dLog(Info, @"Isgl3dGLContext2 : MSAA unavailable for device.");
+			Isgl3dLog(Info, @"Isgl3dGLContext2 : MSAA unavailable for device (max samples <= 0).");
 			return succeeded;
 		}
 		
@@ -284,7 +289,6 @@
 			succeeded = YES;
 		}
 	} else {
-		Isgl3dLog(Info, @"Isgl3dGLContext2 : MSAA unavailable for device.");
 		succeeded  = YES;
 	}
 	
@@ -416,18 +420,18 @@
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER_APPLE, _defaultFrameBuffer);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, _msaaFrameBuffer);
 		glResolveMultisampleFramebufferAPPLE();
-	}
-	
-	if (_framebufferDiscardAvailable) {
-        if (_stencilBufferAvailable) {
-            const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
-            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 3, discards);
-        } else {
-            const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT };
-            glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
+        
+        if (_framebufferDiscardAvailable) {
+            if (_stencilBufferAvailable) {
+                const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
+                glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 3, discards);
+            } else {
+                const GLenum discards[] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT };
+                glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, discards);
+            }
         }
 	}
-	
+    
     self.activeRenderBuffer = _colorRenderBuffer;
 	[_context presentRenderbuffer:GL_RENDERBUFFER];
 }
