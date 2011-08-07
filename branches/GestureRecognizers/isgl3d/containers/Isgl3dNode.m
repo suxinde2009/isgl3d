@@ -33,6 +33,7 @@
 #import "Isgl3dLight.h"
 #import "Isgl3dGLRenderer.h"
 #import "Isgl3dQuaternion.h"
+#import "Isgl3dDirector.h"
 
 static Isgl3dOcclusionMode Isgl3dNode_OcclusionMode = Isgl3dOcclusionQuadDistanceAndAngle;
 
@@ -143,6 +144,26 @@ static Isgl3dOcclusionMode Isgl3dNode_OcclusionMode = Isgl3dOcclusionQuadDistanc
 	}
 	
     return copy;
+}
+
+- (NSArray *)gestureRecognizers {
+	return [[Isgl3dDirector sharedInstance] gestureRecognizersForNode:self];
+}
+
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+	[[Isgl3dDirector sharedInstance] addGestureRecognizer:gestureRecognizer forNode:self];
+}
+
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+	[[Isgl3dDirector sharedInstance] removeGestureRecognizer:gestureRecognizer fromNode:self];
+}
+
+- (id<UIGestureRecognizerDelegate>)gestureRecognizerDelegateFor:(UIGestureRecognizer *)gestureRecognizer {
+	return [[Isgl3dDirector sharedInstance] gestureRecognizerDelegateFor:gestureRecognizer];
+}
+
+- (void)setGestureRecognizerDelegate:(id<UIGestureRecognizerDelegate>)aDelegate forGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+	[[Isgl3dDirector sharedInstance] setGestureRecognizerDelegate:aDelegate forGestureRecognizer:gestureRecognizer];
 }
 
 #pragma mark translation rotation scaling

@@ -134,7 +134,7 @@
 #if	(EXT_discard_framebuffer==1)
 	_framebufferDiscardAvailable = YES;
 #else
-	_framebufferDiscardAvailable = YES;
+	_framebufferDiscardAvailable = NO;
 #endif
 }
 

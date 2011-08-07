@@ -27,6 +27,8 @@
 #import "Isgl3dVector.h"
 #import "Isgl3dMatrix.h"
 #import "isgl3dTypes.h"
+#import <UIKit/UIKit.h>
+
 
 @class Isgl3dMeshNode;
 @class Isgl3dSkeletonNode;
@@ -241,6 +243,11 @@
 @property (nonatomic) BOOL isVisible;
 
 /**
+ * The gesture recognizers currently attached to this node.
+ */
+@property (nonatomic, readonly) NSArray *gestureRecognizers;
+
+/**
  * Allocates and initialises (autorelease) node (position at (0, 0, 0) and zero rotation and no scaling).
  */
 + (id) node;
@@ -249,6 +256,35 @@
  * Initialises the node (position at (0, 0, 0) and zero rotation and no scaling).
  */
 - (id) init;
+
+/**
+ * Add a gesture recognizer to this node.
+ * Note that you may not change the delegate of the gesture recognizer after it has been added.
+ * The UIGestureRecognizerDelegate has to be set before the gesture recognizer is being added to a node.
+ * @param gestureRecognizer The gesture recognizer to be added. Must not be nil.
+ */
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
+
+/**
+ * Removes a gesture recognizer handling touches for this node.
+ * @param gestureRecognizer The gesture recognizer to be removed. Must not be nil.
+ */
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
+
+/**
+ * Returns the original gesture recognizer delegate for the specified gesture recognizer.
+ * To be used after a gesture recognizer has been added to a node.
+ * @result The gesture recognizer delegate if the node contains the specified gesture recognizer.
+ */
+- (id<UIGestureRecognizerDelegate>)gestureRecognizerDelegateFor:(UIGestureRecognizer *)gestureRecognizer;
+
+/**
+ * Sets the gesture recognizer delegate for a gesture recognizer of the node.
+ * To be used after a gesture recognizer has been added to a node.
+ * param aDelegate The gesture recognizer delegate to set.
+ * param gestureRecognizer The gesture recognizer of the node for which the delegate should be set.
+ */
+- (void)setGestureRecognizerDelegate:(id<UIGestureRecognizerDelegate>)aDelegate forGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
 
 
 #pragma mark translation rotation scaling
