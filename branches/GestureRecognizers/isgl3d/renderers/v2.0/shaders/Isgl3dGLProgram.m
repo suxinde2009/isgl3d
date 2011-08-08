@@ -166,6 +166,34 @@
 	return TRUE;
 }
 
+- (BOOL)validateProgram {
+    glValidateProgram(_program);
+    
+    GLint logLength;
+    glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength > 0) {
+        GLchar *error = (GLchar *)malloc(logLength);
+        glGetProgramInfoLog(_program, logLength, &logLength, error);
+        Isgl3dLog(Error, @"Error in program validation:\n%s", error);
+        free(error);
+
+    	// clean up
+    	glDeleteProgram(_program);
+		_program = 0;
+    	if (_vertexShader) {
+	    	glDeleteShader(_vertexShader);
+	    	_vertexShader = 0;
+    	}
+    	if (_fragmentShader) {
+	    	glDeleteShader(_fragmentShader);
+	    	_fragmentShader = 0;
+    	}
+    	return FALSE;
+    }
+    
+    return TRUE;
+}
+
 - (GLint)getAttributeLocation:(NSString*)attributeName {
 	return glGetAttribLocation(_program, [attributeName UTF8String]);
 }
