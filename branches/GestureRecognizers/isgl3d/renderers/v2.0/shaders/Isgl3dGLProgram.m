@@ -199,7 +199,7 @@
 }
 
 - (GLint)getUniformLocation:(NSString*)uniformName {
-	return glGetUniformLocation(_program, [uniformName UTF8String]);
+    return glGetUniformLocation(_program, [uniformName UTF8String]);
 }
 
 - (void)bindAttributeLocation:(NSString*)attributeName location:(GLint)location {

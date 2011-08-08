@@ -1,4 +1,5 @@
 #define MAX_LIGHTS 4
+#define MAX_BONES 4
 
 struct Light {
 	vec4 position;
@@ -28,8 +29,8 @@ uniform mat3 u_normalMatrix;
 uniform vec4 u_sceneAmbientColor;
 
 uniform Material u_material;
-uniform Light u_light[4];
-uniform bool u_lightEnabled[4];
+uniform Light u_light[MAX_LIGHTS];
+uniform bool u_lightEnabled[MAX_LIGHTS];
 
 uniform bool u_includeSpecular;
 uniform bool u_lightingEnabled;
@@ -68,7 +69,7 @@ vec4 vertexPosition;
 vec3 vertexNormal;
 
 
-void pointLight(const in int lightIndex,
+void pointLight(const in Light light,
 				inout vec4 ambient,
 				inout vec4 diffuse,
 				inout vec4 specular) {
@@ -83,9 +84,9 @@ void pointLight(const in int lightIndex,
     
     
 	// Check if light source is directional
-	if (u_light[lightIndex].position.w != 0.0) {
+	if (light.position.w != 0.0) {
 		// Vector between light position and vertex
-		VP = vec3(u_light[lightIndex].position.xyz - ecPosition3);
+		VP = vec3(light.position.xyz - ecPosition3);
 		
 		// Distance between the two
 		d = length(VP);
@@ -95,13 +96,13 @@ void pointLight(const in int lightIndex,
 		
 		// Calculate attenuation
 		vec3 attDist = vec3(1.0, d, d * d);
-		attenuation = 1.0 / dot(u_light[lightIndex].attenuation, attDist);
+		attenuation = 1.0 / dot(light.attenuation, attDist);
         
 		// Calculate spot lighting effects
-		if (u_light[lightIndex].spotCutoffAngle > 0.0) {
-			float spotFactor = dot(-VP, u_light[lightIndex].spotDirection);
-			if (spotFactor >= cos(radians(u_light[lightIndex].spotCutoffAngle))) {
-				spotFactor = pow(spotFactor, u_light[lightIndex].spotFalloffExponent);
+		if (light.spotCutoffAngle > 0.0) {
+			float spotFactor = dot(-VP, light.spotDirection);
+			if (spotFactor >= cos(radians(light.spotCutoffAngle))) {
+				spotFactor = pow(spotFactor, light.spotFalloffExponent);
                 
 			} else {
 				spotFactor = 0.0;
@@ -110,15 +111,15 @@ void pointLight(const in int lightIndex,
 		}
 	} else {
 		attenuation = 1.0;
-		VP = u_light[lightIndex].position.xyz;
+		VP = light.position.xyz;
 	}
     
 	// angle between normal and light-vertex vector
 	nDotVP = max(0.0, dot(VP, normal));
 	
- 	ambient += u_light[lightIndex].ambientColor * attenuation;
+ 	ambient += light.ambientColor * attenuation;
 	if (nDotVP > 0.0) {
-		diffuse += u_light[lightIndex].diffuseColor * (nDotVP * attenuation);
+		diffuse += light.diffuseColor * (nDotVP * attenuation);
         
 		if (u_includeSpecular) {
 			// reflected vector					
@@ -129,7 +130,7 @@ void pointLight(const in int lightIndex,
 			eDotRV = pow(eDotRV, 16.0);
             
 			pf = pow(eDotRV, u_material.shininess);
-			specular += u_light[lightIndex].specularColor * (pf * attenuation);
+			specular += light.specularColor * (pf * attenuation);
 		}
 	}
 	
@@ -149,17 +150,10 @@ void doLighting() {
 		normal = u_normalMatrix * vertexNormal;
 		normal = normalize(normal);
         
-        if (u_lightEnabled[0]) {
-            pointLight(0, amb, diff, spec);
-        }
-        if (u_lightEnabled[1]) {
-            pointLight(1, amb, diff, spec);
-        }
-        if (u_lightEnabled[2]) {
-            pointLight(2, amb, diff, spec);
-        }
-        if (u_lightEnabled[3]) {
-            pointLight(3, amb, diff, spec);
+        for (int i=0; i<MAX_LIGHTS; i++) {
+            if (!u_lightEnabled[i])
+                continue;
+            pointLight(u_light[i], amb, diff, spec);
         }
         
 		v_color.rgb = (u_sceneAmbientColor.rgb + amb.rgb) * u_material.ambientColor.rgb + diff.rgb * u_material.diffuseColor.rgb;
@@ -184,12 +178,17 @@ void doSkinning() {
 	if (u_boneCount > 0) {
 		highp mat4 boneMatrix = u_boneMatrixArray[boneIndex.x];
 		mediump mat3 normalMatrix = u_boneMatrixArrayIT[boneIndex.x];
+        int j;
         
 		vertexPosition = boneMatrix * a_vertex * boneWeights.x;
 		vertexNormal = normalMatrix * a_normal * boneWeights.x;
-		
-		for (lowp int i = 1; i < u_boneCount; ++i) {
-			// "rotate" the vector components
+		j = 1;
+        
+		for (int i=1; i<MAX_BONES; i++) {
+			if (j >= u_boneCount)
+                break;
+            
+            // "rotate" the vector components
 			boneIndex = boneIndex.yzwx;
 			boneWeights = boneWeights.yzwx;
             
@@ -198,6 +197,8 @@ void doSkinning() {
             
 			vertexPosition += boneMatrix * a_vertex * boneWeights.x;
 			vertexNormal += normalMatrix * a_normal * boneWeights.x;
+            
+            j++;
 		}	
 	}	
 }

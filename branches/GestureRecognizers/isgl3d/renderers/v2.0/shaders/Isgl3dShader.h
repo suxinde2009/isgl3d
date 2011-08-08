@@ -65,6 +65,8 @@
 - (void) setUniform1f:(GLint)uniformIndex value:(GLfloat)value;
 - (void) setUniform3f:(GLint)uniformIndex values:(GLfloat *)values;
 - (void) setUniform4f:(GLint)uniformIndex values:(GLfloat *)values;
+- (void) setUniform3fv:(GLint)uniformIndex values:(GLfloat *)values;
+- (void) setUniform4fv:(GLint)uniformIndex values:(GLfloat *)values;
 - (void) setUniformSampler:(GLint)samplerIndex forTextureIndex:(GLuint)textureIndex;
 
 - (void) bindTexture:(GLuint)textureIndex index:(GLuint)index;

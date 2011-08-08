@@ -173,11 +173,19 @@
 }
 
 - (void) setUniform3f:(GLint)uniformIndex values:(GLfloat *)values {
-	glUniform3fv(uniformIndex, 3, values);
+	glUniform3f(uniformIndex, values[0], values[1], values[2]);
 }
 
 - (void) setUniform4f:(GLint)uniformIndex values:(GLfloat *)values {
-	glUniform4fv(uniformIndex, 4, values);
+	glUniform4f(uniformIndex, values[0], values[1], values[2], values[3]);
+}
+
+- (void) setUniform3fv:(GLint)uniformIndex values:(GLfloat *)values {
+	glUniform3fv(uniformIndex, 1, values);
+}
+
+- (void) setUniform4fv:(GLint)uniformIndex values:(GLfloat *)values {
+	glUniform4fv(uniformIndex, 1, values);
 }
 
 - (void) setUniformSampler:(GLint)samplerIndex forTextureIndex:(GLuint)textureIndex {
